@@ -4,19 +4,26 @@ Design decisions not yet made. These are the questions to answer before Bitsocia
 
 ## Stage 1: The Nearby Setting
 
-### Publication Sizes
+### Encoding
 
-The first concrete task is measuring, as pkc-js encodes them:
+Sizes are now measured (see [how-it-could-work.md](how-it-could-work.md#measured-sizes)). A typical post or reply is 550 to 850 bytes as pkc-js encodes it, of which 350 to 470 bytes are fixed overhead.
 
-- a signed post, reply and vote,
-- a community's latest signed state, and one page of posts.
-
-Those numbers decide how many Bluetooth fragments a post needs, whether cached community data can be shared nearby, and later whether LoRa is viable for posting, only for reading, or not at all.
+- Send publications as pkc-js encodes them (2 fragments for a typical post), or in a packed format that could fit a short post in one frame? Packing saves airtime but adds a second encoding that must rebuild the signed fields exactly.
+- A community's whole signed record is 79 to 202 KB compressed and only verifies whole. Should Nearby share accepted posts one at a time instead, each with its community-signed update (about 1.5 KB)?
 
 ### Wire Format
 
-- Should Nearby use its own Bluetooth service and packet format, or bitchat's? Using bitchat's could let bitchat phones relay Bitsocial packets, but whether bitchat relays packet types it does not recognise is not checked.
-- Reuse [bitchat-android](https://github.com/permissionlesstech/bitchat-android)'s Bluetooth code (GPL-3.0, Kotlin), port from the public-domain [iOS code](https://github.com/permissionlesstech/bitchat), or write from the [whitepaper](https://github.com/permissionlesstech/bitchat/blob/main/WHITEPAPER.md)? bitchat-android's licence file is GPL-3.0, but its README still says public domain and nothing says whether later GPL versions apply. If it is GPL-3.0 only, a client that includes it can't be distributed under a later GPL version.
+Checked on 2026-11-14 by reading the source of [bitchat](https://github.com/permissionlesstech/bitchat) at `04995f68` and [bitchat-android](https://github.com/permissionlesstech/bitchat-android) at `14ab73c4`. Nothing was run on phones.
+
+- **Both apps relay packet types they do not recognise.** The type byte is not checked when a packet is decoded, and a packet that is not addressed to the phone goes to the relay step whatever its type. Unknown types need no signature and no prior announce from the sender.
+- Limits that apply anyway: the version byte must be 1 or 2, the payload at most 128 KiB, duplicates are dropped, and the iOS app drops packets whose timestamp is more than 120 seconds from its clock.
+- Neither project promises this. A later release could filter unknown types, or assign the type byte Nearby picked.
+
+Still to decide:
+
+- Use bitchat's Bluetooth service, so bitchat phones relay Bitsocial packets, or an own service? Sharing theirs adds foreign traffic to their mesh, so it should be agreed with bitchat's maintainers first. **Proposed:** adopt bitchat's packet format and fragmentation either way, keep the service identifier a build setting, start on an own service, and switch to bitchat's only with their agreement.
+- Reuse bitchat-android's Bluetooth code, port the public-domain iOS code, or write from the [whitepaper](https://github.com/permissionlesstech/bitchat/blob/main/WHITEPAPER.md)? **Proposed:** reuse bitchat-android's, since Android is the first target.
+- **Licence.** bitchat-android's `LICENSE.md` is the GPL version 3 text, changed from MIT on 2026-02-28. No file says "only" or "or later", and its README and privacy policy still say public domain. 5chan, Seedit and bitsocial-react-hooks are GPL-3.0-or-later, so a build that includes this code would be distributed under GPL version 3. That reading is not legal advice. Asking bitchat-android's maintainers to fix the README would settle it.
 
 ### Retention
 
@@ -98,4 +105,4 @@ Off-grid devices drift. Where does a mesh client get time accurate enough for th
 
 ### First Hardware Target
 
-The likely first long-range target is a laptop or phone paired with a LoRa radio, plus a Raspberry Pi gateway. This waits until the publication sizes are measured.
+The likely first long-range target is a laptop or phone paired with a LoRa radio, plus a Raspberry Pi gateway. The [measured sizes](how-it-could-work.md#measured-sizes) say a post fits in one or two 500-byte Reticulum packets, while a board's whole record does not suit a link measured in bits to kilobits per second. Posting looks viable; reading needs a much smaller snapshot format.

@@ -47,9 +47,38 @@ How long a phone keeps and re-shares other people's publications is an open ques
 
 - **Publications the user writes while Nearby is on:** posts and replies, signed by the author's key as usual.
 - **Votes**, which only matter on comments the community has already accepted, since a vote names a comment CID.
-- Possibly **cached community data** the phone already has, so someone who opened a board yesterday can share its latest state. Community data is signed by the community, so receivers can verify it, but it may be too large for Bluetooth.
+- Possibly **a community's cached settings** (title, rules, challenges), which measure about 5 KB. A full page of posts is too large to send as one item (see below), so accepted posts would have to be shared one at a time.
 
-Publication sizes as pkc-js encodes them are not measured yet. That comes first.
+### Measured Sizes
+
+Measured on 2026-11-14 with pkc-js 0.0.144. Publications were signed locally and never published. Sizes are bytes.
+
+| Publication | JSON | CBOR | CBOR, key and signature as bytes | Fixed overhead |
+|---|---|---|---|---|
+| Post, 40-character title, no content | 450 | 408 | 375 | 335 |
+| Post, 40-character title, 280 characters | 753 | 707 | 674 | 354 |
+| Post, 40-character title, 1,000 characters | 1,473 | 1,427 | 1,394 | 354 |
+| Reply, 20 characters | 576 | 523 | 490 | 470 |
+| Reply, 280 characters | 836 | 785 | 752 | 472 |
+| Vote | 482 | 435 | 402 | 402 |
+
+Fixed overhead is the last column minus the text. Most of it is field names, the list of signed property names, and keys and CIDs written as text. A packed format that sends keys, CIDs and the signature as raw bytes and rebuilds the field names on arrival would need about 140 bytes for a post, 210 for a reply and 170 for a vote, plus the text. That is an estimate, not a measurement, and the receiver must be able to rebuild the exact signed fields or the signature will not verify.
+
+bitchat's mesh sends a frame of up to 512 bytes whole and splits anything larger into fragments of 469 bytes. Its header takes 30 of those bytes. So, encoded as pkc-js does today:
+
+- a vote fits in one frame as CBOR,
+- a typical post or reply takes 2 fragments,
+- a 1,000-character post takes 4.
+
+Community data, from three live 5chan boards on the same day:
+
+| Item | JSON | Compressed (deflate) |
+|---|---|---|
+| Community settings without posts | 4.6 to 5.0 KB | about 2 KB |
+| Whole signed record with its preloaded page (246 to 634 comments) | 400 KB to 1.04 MB | 79 to 202 KB |
+| One accepted comment with its community-signed update | about 1.5 KB median | not measured |
+
+Text was short: the median comment had 24 to 38 characters. The whole record is signed as one piece, so it can only be verified whole. At 79 to 202 KB compressed that is 170 to 430 fragments, more than bitchat's 128 KiB limit for packet types it does not know and more than bitchat-android's 256 fragments per packet. Bluetooth transfer speed between phones is not measured yet.
 
 ### The Nearby View
 

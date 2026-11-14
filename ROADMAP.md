@@ -1,6 +1,6 @@
 # Roadmap
 
-**Status: not started.** Nothing below is scheduled. P2P chat on Bitsocial comes first, and this work only begins when someone picks up Phase 0.
+**Status: Phase 0 measured, two decisions open.** Nothing after Phase 0 is scheduled. P2P chat on Bitsocial comes first.
 
 The durations are rough guesses for one developer working on it full time, made before anything was measured. Phases 0 and 1 exist to replace them with real numbers. Together they come to about 2 to 3 months for an experimental Android release in one client.
 
@@ -10,14 +10,14 @@ Each phase ends with a check. If the check fails, the work stops there and the r
 
 Needs no phones.
 
-- [ ] Measure the encoded size of a signed post, reply and vote as pkc-js produces them.
-- [ ] Measure a community's latest signed state and one page of posts.
-- [ ] Check whether bitchat phones relay packet types they do not recognise.
-- [ ] Confirm bitchat-android's licence terms (GPL-3.0 only, or later versions too).
-- [ ] Decide the wire format: an own Bluetooth service and packet format, or bitchat's.
-- [ ] Decide whether to reuse bitchat-android's Bluetooth code, port the iOS code, or write from the whitepaper.
+- [x] Measure the encoded size of a signed post, reply and vote as pkc-js produces them. A typical post or reply is 550 to 850 bytes, a vote 400 to 480.
+- [x] Measure a community's latest signed state and one page of posts. Settings are about 5 KB; the whole record is 79 to 202 KB compressed.
+- [x] Check whether bitchat phones relay packet types they do not recognise. Both apps do, from reading the source. Not tested on phones.
+- [x] Confirm bitchat-android's licence terms. GPL version 3 text, with nothing saying "only" or "or later", and a README that still says public domain.
+- [ ] Decide the wire format: an own Bluetooth service and packet format, or bitchat's. Proposal in [open-questions.md](open-questions.md#wire-format).
+- [ ] Decide whether to reuse bitchat-android's Bluetooth code, port the iOS code, or write from the whitepaper. Proposal in the same place.
 
-**Check:** the sizes are in [how-it-could-work.md](how-it-could-work.md), and the number of Bluetooth fragments a typical post needs is known.
+**Check:** passed on 2026-11-14. The sizes are in [how-it-could-work.md](how-it-could-work.md#measured-sizes): a typical post needs 2 Bluetooth fragments and a vote fits in one frame. The two decisions are still open.
 
 ## Phase 1: Two Phones (1 to 2 weeks)
 
