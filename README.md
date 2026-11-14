@@ -1,59 +1,78 @@
 # Bitsocial Mesh
 
-**Bitsocial Mesh is an experimental "Nearby" setting for Bitsocial clients such as 5chan, Seedit and the future Twitter/X alternative.** With it turned on, phones close to each other exchange signed Bitsocial posts over a Bluetooth mesh when there is no internet, and each author's app publishes their own posts to the wider Bitsocial network once it is back online. Longer-range carriers such as LoRa radios come later.
+**Bitsocial Mesh is a plan to keep Bitsocial communities working when the internet is gone**, whether a government switched it off or a disaster took it down. People in the same place keep reading, posting, replying and moderating in apps such as 5chan and Seedit, over a mesh of nearby devices. When any link to the outside returns, what they wrote reaches the rest of the network.
 
-> **Status: idea stage.** This repository reserves the name and collects the design. Nothing here is built. It is not on the current roadmap: P2P chat on Bitsocial itself comes first. It fits [Phase 5 of the Bitsocial master plan](https://bitsocial.net/#master-plan-phase-5), the long tail of niche clients.
+> **Status: idea stage.** This repository reserves the name and collects the design. Nothing here is built, and the two capabilities that matter most need protocol work in pkc-js that has not been proposed yet. See [ROADMAP.md](ROADMAP.md). It fits [Phase 5 of the Bitsocial master plan](https://bitsocial.net/#master-plan-phase-5).
 
-## The Thesis
+## The Problem
 
-Every Bitsocial publication is already signed by its author's key, and every community is already addressed by its owner's key. Neither depends on the network that carried them. A post that crossed a Bluetooth mesh, a LoRa link or a USB stick can be verified exactly like one that came over libp2p.
+Offline mesh chat already exists. [bitchat](https://github.com/permissionlesstech/bitchat) lets nearby phones talk over Bluetooth with no internet. What a mesh chat does not have is communities: threads that persist, rules, moderators and a defence against spam. In a blackout, a crowd sharing one unmoderated channel is easy to flood and hard to trust.
 
-So nearby posting needs no new protocol and no new client. It needs a mesh transport and a few shared pieces that existing clients turn on from their settings.
+Bitsocial has communities. What it lacks is a way to run them without the internet.
+
+## What Has to Be True
+
+A Bitsocial community lives where its owner's node can be reached. That node accepts each post, gives it its permanent identifier, runs the anti-spam challenge and applies moderation. If nobody can reach it, nothing is accepted, and nobody can reply or vote. So a blackout needs two things that do not exist today:
+
+| Capability | What it means | What it needs |
+|---|---|---|
+| **A community on the mesh** | A laptop, desktop or small computer inside the affected area hosts the community, and nearby phones reach it over the mesh. Posts are accepted, threaded, challenged and moderated as usual. | A mesh link between clients and the host node. Hosting needs Node.js today, so the host can't be a phone. |
+| **Delayed delivery** | A post signed inside the blackout is carried out by any device that later reaches the internet, and its community still accepts it. | A protocol change. Today a community rejects anything timestamped more than 5 minutes from its clock. |
+
+A third, smaller piece needs no protocol change: a **Nearby feed**, where phones exchange signed posts directly and each author's app publishes their own posts once it is back online. It is a useful first step but it is not the goal, because nothing in it is accepted or moderated while the internet is down.
+
+Details are in [how-it-could-work.md](how-it-could-work.md).
 
 ## A Setting, Not a Separate App
 
+Everything is meant to live inside the existing clients, turned on from their settings.
+
 | Piece | Where it would live | What it does |
 |---|---|---|
-| Bluetooth mesh plugin | A Capacitor plugin used by the clients' Android builds | Advertises, scans and relays packets between nearby phones, with hop limits and duplicate suppression. |
-| Mesh sync layer | Shared with the clients through bitsocial-react-hooks | Broadcasts the user's signed publications, syncs other people's from nearby phones, verifies them with pkc-js and queues the user's own posts for publishing. |
-| Nearby UI | Each client | A settings toggle, a Nearby view and a queued, published or rejected state on the user's own posts. |
+| Bluetooth mesh plugin | A Capacitor plugin in the clients' Android builds | Advertises, scans and relays packets between nearby phones. |
+| Mesh sync layer | bitsocial-react-hooks, shared by the clients | Sends and receives publications over the mesh, verifies them with pkc-js, queues the user's own posts. |
+| Mesh bridge | Beside a community's node, on a desktop app or a small computer | Lets a hosted community take posts from the mesh and send accepted posts back. |
+| Mesh UI | Each client | A settings toggle, a view of what is nearby, and the state of each of the user's posts. |
 
 Platforms:
 
-- **Android** (Capacitor) is the first target.
-- **Desktop** (Electron) may work later. Not yet checked.
-- **Web and PWA builds can't take part.** Web Bluetooth can connect out to a device but can't advertise or accept connections, so a browser tab can't be a mesh node.
+- **Android** (Capacitor) is the first target for phones.
+- **Desktop** (Electron) is the natural host for a community on the mesh. Whether it can join a Bluetooth mesh is not checked.
+- **Web and PWA builds can't take part.** Web Bluetooth can connect out to a device but can't advertise or accept connections.
 - **iOS** needs an iOS build of the clients first. 5chan and Seedit don't ship one.
 
-## Why It Needs No Protocol Change
+## Limits
 
-A community node rejects publications timestamped more than 5 minutes from its clock. That stops a relay or a gateway from delivering someone else's post hours later, but it doesn't stop the author: when the author's app is back online it signs each queued post again with a fresh timestamp and publishes it like any other post. Nearby phones see the offline copy; the community gets the new one. See [how-it-could-work.md](how-it-could-work.md#the-5-minute-rule).
-
-The best fit is a profile-based client like the [Phase 3 Twitter/X alternative](https://bitsocial.net/#master-plan-phase-3). A profile is a community that only its owner can post to, so the owner's queued posts need nobody else's approval. In 5chan and Seedit it works too, but the Nearby view is unmoderated until posts reach their board, and the board can still reject them.
+- **Range.** Bluetooth reaches tens of metres per hop. A mesh of phones covers a protest, a campus or a neighbourhood. Anything larger needs LoRa radios or people carrying data.
+- **Reliability.** Phone makers restrict background Bluetooth, each in their own way. The realistic target is that it works well on Android while the app is open or recently used.
+- **It only helps people who already have the app.** Nobody can install it after the internet is gone, unless the app can be passed from phone to phone.
+- **Privacy.** A phone on the mesh advertises that it is there, and every post carries its author's public key.
 
 ## Compared With bitchat
 
-[bitchat](https://github.com/permissionlesstech/bitchat) is a chat app whose phones form a Bluetooth mesh, with Nostr relays as its internet path. Its design is documented in its [whitepaper](https://github.com/permissionlesstech/bitchat/blob/main/WHITEPAPER.md), and Bitsocial Mesh would borrow its mesh design.
+bitchat's design is documented in its [whitepaper](https://github.com/permissionlesstech/bitchat/blob/main/WHITEPAPER.md). Bitsocial Mesh would borrow its mesh design and possibly its packet format.
 
 | | bitchat | Bitsocial Mesh |
 |---|---|---|
 | What nearby people share | Public chat, end-to-end encrypted private messages and, in the iOS app since July 2026, short signed board notices | Posts, replies and votes in Bitsocial communities and profiles |
-| How long it lasts | Public chat history syncs for 6 hours. Board notices are at most 512 bytes and last at most 7 days. | Nearby copies are temporary. A post lasts as long as its community keeps it once accepted. |
-| Internet path | Nostr relays: location channels and private messages | The author's own client publishes to Bitsocial when back online |
-| Moderation | Users block senders | Users block authors in the Nearby view; each community moderates posts that reach it |
+| Needs a server to be reachable | No. A message is valid as soon as it is signed. | Yes, the community's host, which is why the host has to be on the mesh. |
+| How long it lasts | Public chat history syncs for 6 hours. Board notices are at most 512 bytes and last at most 7 days. | As long as the community keeps it. |
+| Internet path | Nostr relays: location channels and private messages | The community is an ordinary Bitsocial community once it has a link out |
+| Moderation and spam | Users block senders | The community's own rules, moderators and challenges |
 | Private messages | Yes | No. Bitsocial has no DMs yet ([pkc-js#51](https://github.com/pkcprotocol/pkc-js/issues/51)). |
 
 The iOS and macOS app is public domain (Unlicense). [bitchat-android](https://github.com/permissionlesstech/bitchat-android) is a separate Kotlin codebase under GPL-3.0, so its Bluetooth code could be reused in GPL clients.
 
-## Later: Beyond Bluetooth
+## Later
 
-LoRa, packet radio, gateways and communities hosted on the mesh itself are later stages. They run into the 5-minute rule directly, because a gateway would be delivering posts the author signed earlier. [Reticulum](https://reticulum.network/) is the leading candidate transport for them. See [how-it-could-work.md](how-it-could-work.md#later-longer-range) and the official [Bitsocial and Reticulum](https://docs.bitsocial.net/comparisons/reticulum/) comparison.
+- **Longer range.** LoRa, packet radio and gateways. [Reticulum](https://reticulum.network/) is the leading candidate transport. See the official [Bitsocial and Reticulum](https://docs.bitsocial.net/comparisons/reticulum/) comparison.
+- **A map.** Sites such as [bitchatexplorer.com](https://bitchatexplorer.com/) and [bitmap.lat](https://bitmap.lat/) draw bitchat's location channels on a world map. They read those from Nostr relays over the internet, not from the Bluetooth mesh. A Bitsocial map of communities by coarse location is possible the same way, as an opt-in feature that only works online.
 
 ## Documents
 
-- [how-it-could-work.md](how-it-could-work.md): the Nearby setting, publishing on reconnect, privacy, and the later long-range stages
-- [ROADMAP.md](ROADMAP.md): the phases from first measurements to an experimental Android release, with a checklist for each
-- [open-questions.md](open-questions.md): decisions not yet made, including wire format, unmoderated content, licensing and radio law
+- [how-it-could-work.md](how-it-could-work.md): the two capabilities, the Nearby feed, measured sizes, privacy and longer range
+- [ROADMAP.md](ROADMAP.md): the phases, with a checklist and a pass-or-stop check for each
+- [open-questions.md](open-questions.md): decisions not yet made
 
 ## License
 

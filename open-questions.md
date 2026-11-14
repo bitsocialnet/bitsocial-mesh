@@ -2,7 +2,7 @@
 
 Design decisions not yet made. These are the questions to answer before Bitsocial Mesh moves from idea to spec.
 
-## Stage 1: The Nearby Setting
+## The Mesh
 
 ### Encoding
 
@@ -29,6 +29,58 @@ Still to decide:
 
 How long does a phone keep and re-share other people's nearby publications? bitchat keeps public chat for 6 hours and board notices for up to 7 days. Longer helps posts travel between groups; shorter limits spam and storage.
 
+### Other Carriers
+
+- Does the existing stack already work between devices on a Wi-Fi network with no internet behind it? If it does, a laptop hotspot is a faster carrier than Bluetooth and needs far less new code.
+- Wi-Fi Aware and Wi-Fi Direct connect Android phones without an access point. Worth it, or Bluetooth only?
+
+### Platforms and Testing
+
+- Battery use and background reliability on Android vary by phone maker. They need measuring on real phones; emulator Bluetooth support is not checked.
+- Can Electron take part on desktop, and with which Bluetooth library?
+- iOS needs iOS builds of the clients first, and iOS limits Bluetooth advertising in the background.
+
+## A Community on the Mesh
+
+### What Breaks With No Internet
+
+Not tested. A host and its clients may depend on the internet for name resolution, for the HTTP routers that find peers, for bootstrap peers and for challenges that call outside services. Which of these stop a community from working on an isolated network, and which only log errors?
+
+### The Host
+
+- Hosting needs Node.js today, so a phone can't host. Is a phone host worth pursuing, or is "someone nearby has a laptop" good enough?
+- The host is one device and one person. If it is switched off, seized or out of battery, the community stops. Can a second device take over, and how would it hold the community's key safely?
+- The person running the host is easy to locate by radio. What can reduce that risk?
+
+### The Bridge
+
+- The publishing exchange is 4 messages. How many Bluetooth packets and how many seconds does it take across several hops? It has to finish well inside 5 minutes.
+- How does a phone get the posts it missed: ask the host for everything since a time, or sync between neighbouring phones as bitchat does?
+- Phones can verify each accepted post and the host's signed update for it. Can they also tell that the host is withholding posts?
+
+### Finding and Trusting a Community
+
+- How does a phone learn which communities are hosted nearby?
+- Anyone can announce a community with the title of a well-known one. Addresses are keys, so a phone that saw the real community before can tell them apart. What does a first-time user see?
+- A community created during a blackout has no history and no reputation. Should clients label it as local and new?
+
+### Challenges
+
+Challenges that need an outside service, such as a captcha image fetched from the web, can't run. Which of the existing challenges work with no internet, and does a host need a fallback set for a blackout?
+
+## Delayed Delivery
+
+Community hosts reject publications more than 5 minutes old (see [how-it-could-work.md](how-it-could-work.md#the-5-minute-rule)). Accepting a post that was signed hours earlier and carried out by someone else needs a change to that rule, proposed as a BSIP and decided by the pkc-js maintainers. A community would opt in to a longer window for delayed publications, in keeping with communities setting their own rules.
+
+- What stops backdating, if the window is hours or days? Is the author's timestamp enough, or does the carrier attest when it first saw the publication?
+- Does the carrier deliver the author's sealed request as it is, which means the challenge messages need the same exception, or does it run a fresh exchange on the author's behalf?
+- The result of the exchange goes to the carrier. How does the author learn whether the post was accepted?
+- Several carriers may deliver the same post. The host has to accept it once.
+- How are delayed replies shown in threads that moved on without them?
+- A carrier holds other people's sealed posts. What does it reveal about the carrier if their phone is searched?
+
+## The Nearby Feed
+
 ### Replies and Votes on Nearby-Only Posts
 
 A reply or vote names a comment CID, and a comment only gets one when its community accepts it ([how-it-could-work.md](how-it-could-work.md#back-online)). Options:
@@ -43,29 +95,22 @@ A reply or vote names a comment CID, and a comment only gets one when its commun
 - Author keys are free to create, so per-author rate limits don't stop spam. What else: per-connection limits, proof of work on each publication, or showing only authors the user already follows?
 - Should 5chan and Seedit only show nearby posts for boards the user has joined?
 
-### Privacy
+## Privacy
 
 - Should the client use a separate account for Nearby by default, so the main identity is never tied to a place?
 - Can the Bluetooth identifiers rotate? bitchat lists rotating on-air identity as future work.
+- A blackout is when being located is most dangerous. Should the mesh be off unless the user turns it on each time, and should the app say plainly what nearby devices can see?
 
-### Platforms and Testing
+## Getting the App to People
 
-- Battery use and background reliability on Android vary by phone maker. They need measuring on real phones; emulator Bluetooth support is not checked.
-- Can Electron take part on desktop, and with which Bluetooth library?
-- iOS needs iOS builds of the clients first, and iOS limits Bluetooth advertising in the background.
+- Nobody can download the app once the internet is gone. Can the Android app send its own install file to a nearby phone?
+- App stores can remove an app in a country at a government's request. Is a direct download the main channel?
+
+## A Map
+
+A world map of communities by coarse location is possible while online, the way bitchat's maps read location channels from Nostr relays. Open points: what a community publishes to appear on it, how coarse the location is, and whether the feature is safe at all for the people this project is for.
 
 ## Later: Longer Range
-
-### Delayed Publications
-
-Community nodes reject publications more than 5 minutes old (see [how-it-could-work.md](how-it-could-work.md#the-5-minute-rule)). A gateway delivering a post the author signed hours earlier is impossible without changing that rule. Options:
-
-- **Live paths only.** Only publish when a gateway is reachable in real time. No protocol change, but no posting from a fully disconnected mesh.
-- **Mesh-hosted communities only.** Offline posting works for communities whose node is on the mesh. No protocol change, but internet communities stay read-only from the mesh.
-- **A BSIP for delayed publications.** A community opts in to a longer window for relayed publications, in keeping with communities setting their own rules. Open sub-questions:
-  - What stops backdating, if the window is hours or days? Is the author's timestamp enough, or does a gateway attest when it first saw the publication?
-  - How are delayed replies shown in threads that moved on without them?
-  - Do challenge messages need the same exception, or does the gateway run a fresh exchange with a pre-answered request?
 
 ### Snapshot Format
 
