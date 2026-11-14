@@ -2,13 +2,13 @@
 
 **Status: sizes measured, nothing built.** Nothing below is scheduled.
 
-The goal is that Bitsocial communities keep working with no internet. The phases follow the stages in [how-it-could-work.md](how-it-could-work.md): a community box first, then delayed delivery, then radio links between boxes, then phone to phone.
+The goal is that Bitsocial communities keep working with no internet. The phases follow the stages in [how-it-could-work.md](how-it-could-work.md): a community box first, then radio links between boxes. Delayed delivery and phone to phone are kept as later options.
 
-The durations are rough guesses for one developer working full time. The first phase that meets the goal is Phase 2. A first guess for reaching the end of it is 1 to 2 months, with low confidence until Phase 1 shows what breaks offline. Phase 3 is protocol work that depends on the pkc-js maintainers and has no estimate.
+The durations are rough guesses for one developer working full time. The first phase that meets the goal is Phase 2. A first guess for reaching the end of it is 1 to 2 months, with low confidence until Phase 1 shows what breaks offline.
 
 Each phase ends with a check. If the check fails, the work stops there and the reason is written into [open-questions.md](open-questions.md).
 
-Phases 1 and 3 need no special hardware and can start at any time.
+Phase 1 needs no special hardware and can start at any time.
 
 ## Phase 0: Measure (done)
 
@@ -17,7 +17,7 @@ Phases 1 and 3 need no special hardware and can start at any time.
 - [x] Check whether bitchat phones relay packet types they do not recognise. Both apps do, from reading the source. Not tested on phones.
 - [x] Confirm bitchat-android's licence terms. GPL version 3 text, with nothing saying "only" or "or later", and a README that still says public domain.
 
-**Check:** passed on 2026-11-14. The sizes are in [how-it-could-work.md](how-it-could-work.md#measured-sizes). They matter for Phases 4 and 5; over Wi-Fi nothing needs shrinking.
+**Check:** passed on 2026-11-14. The sizes are in [how-it-could-work.md](how-it-could-work.md#measured-sizes). They matter for Phases 3 and 5; over Wi-Fi nothing needs shrinking.
 
 ## Phase 1: Blackout Test on a Local Network (2 to 4 days)
 
@@ -43,22 +43,11 @@ The first phase that meets the goal.
 - [ ] A set of challenges that work offline.
 - [ ] Test with a handful of phones, including an iPhone, and measure how many one hotspot can serve.
 - [ ] A ready-made image for a small computer such as a Raspberry Pi.
+- [ ] Copy a box's data to a second machine that has internet and confirm the community publishes from there unchanged.
 
 **Check:** with no internet anywhere, people who never installed anything join a laptop's hotspot, open the community in a browser, post and reply, and a moderator removes a post. When the laptop gets a link out, the community and everything in it appear on the wider network.
 
-## Phase 3: Delayed Delivery (not estimated)
-
-Protocol work, decided by the pkc-js maintainers.
-
-- [ ] Open the proposal with the pkc-js maintainers: a community opts in to a longer window for a publication's timestamp.
-- [ ] Answer the open points in [open-questions.md](open-questions.md#stage-2-delayed-delivery): backdating, challenges answered in advance, how the author learns the result, duplicates.
-- [ ] If accepted, implement it in pkc-js.
-- [ ] In the clients: hold other people's signed posts, and publish them when a link appears.
-- [ ] A box collects posts for communities hosted elsewhere and hands them to devices that are leaving.
-
-**Check:** a post signed with no internet is carried out by a different phone hours later and accepted by a community hosted elsewhere.
-
-## Phase 4: Linking Boxes (not estimated)
+## Phase 3: Linking Boxes (not estimated)
 
 Needs two LoRa radios and two boxes.
 
@@ -69,6 +58,16 @@ Needs two LoRa radios and two boxes.
 - [ ] Check the radio rules for the first target region.
 
 **Check:** someone on one box's hotspot posts to a community hosted on a second box a kilometre away, with no internet at either.
+
+## Phase 4: Delayed Delivery (on demand; not estimated)
+
+Not started unless people using boxes ask for it. It needs a protocol change, decided by the pkc-js maintainers, and it costs more than it first appears (see [how-it-could-work.md](how-it-could-work.md#stage-3-delayed-delivery)).
+
+- [ ] Agree the design with the pkc-js maintainers: opt-in per community, posts and replies only, received time recorded by the host, delayed posts sent to the approval queue.
+- [ ] Implement it in pkc-js.
+- [ ] In the clients: hold other people's signed posts, and publish them when a link appears.
+
+**Check:** a post signed with no internet is carried out by a different phone hours later and reaches the approval queue of a community hosted elsewhere.
 
 ## Phase 5: Phone to Phone (optional; about 2 to 3 months if built)
 

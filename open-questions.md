@@ -20,6 +20,7 @@ Not tested. A host and its clients may depend on the internet for name resolutio
 - Hosting needs Node.js today, so a phone can't be the box. Is a phone host worth pursuing, or is "someone nearby has a laptop" good enough?
 - The box is one device and one person. If it is switched off, seized or out of battery, the community stops. Can a second device take over, and how would it hold the community's key safely?
 - The person running the box is easy to locate by its Wi-Fi signal. What can reduce that risk?
+- A copy of the box's data can be carried out and published elsewhere, but it includes the community's key. Who should be allowed to make a copy, and can a community be published by a carrier who can't then control it?
 - A seized box holds the community's key and its database. What should it keep on disk, and should it be encrypted?
 
 ### Finding and Trusting a Community
@@ -38,20 +39,7 @@ Challenges that need an outside service, such as a captcha image fetched from th
 - Can one box hand the software to another device over its hotspot, so boxes multiply during a blackout?
 - App stores can remove an app in a country at a government's request. Is a direct download the main channel?
 
-## Stage 2: Delayed Delivery
-
-A host rejects a publication timestamped more than 5 minutes from its clock (see [how-it-could-work.md](how-it-could-work.md#the-5-minute-rule)). Accepting a post that was signed hours earlier and carried out by someone else needs a change to that rule, decided by the pkc-js maintainers. A community would opt in to a longer window, in keeping with communities setting their own rules.
-
-- What stops backdating, if the window is hours or days? Is the author's timestamp enough, or does the carrier attest when it first saw the publication?
-- How does the community's choice appear in its public settings, so clients know whether carrying a post there is worth it?
-- The carrier runs the publishing exchange. How does it get the author's answers to challenges, and which challenges can be answered in advance at all?
-- The result of the exchange goes to the carrier. How does the author learn whether the post was accepted?
-- Several carriers may deliver the same post. The host has to accept it once.
-- How are delayed replies shown in threads that moved on without them?
-- A carrier holds other people's posts. What does it reveal about the carrier if their phone is searched?
-- How do posts get from authors to carriers: through a box, phone to phone, or both?
-
-## Stage 3: Linking Boxes
+## Stage 2: Linking Boxes
 
 ### Snapshot Format
 
@@ -92,6 +80,18 @@ Off-grid devices drift. Where does a mesh client get time accurate enough for th
 ### First Hardware Target
 
 The likely first long-range target is a laptop or phone paired with a LoRa radio, plus a Raspberry Pi gateway. The [measured sizes](how-it-could-work.md#measured-sizes) say a post fits in one or two 500-byte Reticulum packets, while a board's whole record does not suit a link measured in bits to kilobits per second. Posting looks viable; reading needs a much smaller snapshot format.
+
+## Stage 3: Delayed Delivery
+
+Not planned until the earlier stages are in use (see [how-it-could-work.md](how-it-could-work.md#stage-3-delayed-delivery)). It needs a protocol change decided by the pkc-js maintainers.
+
+- Is the narrow case worth permanent fields on the community record, given that a box can be carried out and posts can be crossposted afterwards?
+- How does the host record when it received a post, and do time-based sorts use that or the author's timestamp?
+- Do delayed posts always go to the approval queue, or may a community let some authors through?
+- How does the community's choice appear in its public settings, so clients know whether carrying a post there is worth it?
+- The result of the exchange goes to the carrier. How does the author learn whether the post was accepted?
+- A reply can only name a parent that already has a CID. Are delayed replies useful at all?
+- A carrier holds other people's posts. What does it reveal about the carrier if their phone is searched?
 
 ## Stage 4: Phone to Phone
 

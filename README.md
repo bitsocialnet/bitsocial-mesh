@@ -20,9 +20,9 @@ So the question is not how phones talk to each other. It is how people reach a h
 
 | Stage | What it is | What it needs |
 |---|---|---|
-| **1. The community box** | A laptop or a small computer hosts the community and opens a Wi-Fi hotspot. People nearby join the hotspot and open the app in a browser. Posts are accepted, threaded, challenged and moderated as usual. | No protocol change. Whether today's software already works this way is untested. |
-| **2. Delayed delivery** | A post signed inside the blackout is carried out by any device that later reaches the internet, and its community still accepts it. This is the way out of a shutdown that needs no hardware. | One opt-in protocol change. Today a host rejects a post timestamped more than 5 minutes from its clock. |
-| **3. Linking boxes** | Boxes across a city reach each other, and a box with internet relays for the others, over LoRa radios. | Radio hardware, run by a few volunteers. Not something each user carries. |
+| **1. The community box** | A laptop or a small computer hosts the community and opens a Wi-Fi hotspot. People nearby join the hotspot and open the app in a browser. Posts are accepted, threaded, challenged and moderated as usual. If no link returns, the box or a copy of its data can be carried to one. | No protocol change. Whether today's software already works this way is untested. |
+| **2. Linking boxes** | Boxes across a city reach each other, and a box with internet relays for the others, over LoRa radios. | Radio hardware, run by a few volunteers. Not something each user carries. |
+| **3. Delayed delivery** | A post signed inside the blackout is carried out by someone else and still accepted by a community hosted elsewhere. | A protocol change with real costs. Not planned until the earlier stages are in use. |
 | **4. Phone to phone** | Phones exchange posts directly over Bluetooth, as bitchat does. | A native Bluetooth mesh in the Android apps. The most work for the shortest range, so it comes last and may be dropped. |
 
 Details are in [how-it-could-work.md](how-it-could-work.md).
@@ -32,8 +32,8 @@ Details are in [how-it-could-work.md](how-it-could-work.md).
 | Piece | Where it would live | What it does |
 |---|---|---|
 | Community box | A desktop app on a laptop, or an image for a small computer such as a Raspberry Pi | Runs the community's node, opens a hotspot and serves the client to browsers on it. |
-| Delayed delivery | pkc-js, and the clients through bitsocial-react-hooks | Lets a community opt in to older posts, and lets any client carry other people's posts out. |
 | Radio link | Beside a box's node | Carries posts and community updates between boxes. |
+| Delayed delivery | pkc-js, and the clients through bitsocial-react-hooks | Lets a community opt in to older posts, and lets any client carry other people's posts out. Only if Stage 3 is built. |
 | Bluetooth mesh | A Capacitor plugin in the clients' Android builds | Phone-to-phone exchange, if Stage 4 is built. |
 
 ## Limits

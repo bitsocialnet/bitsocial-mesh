@@ -32,7 +32,7 @@ The effect is that a post has to be delivered when it is written. The author can
 |---|---|
 | The author's app, to a host it can reach directly | Yes. This is [Stage 1](#stage-1-the-community-box). |
 | The author's own app, once it is back online, signing at that moment | Yes. It is an ordinary publication. |
-| Anyone delivering a post the author signed earlier | No, once it is more than 5 minutes old. This is [Stage 2](#stage-2-delayed-delivery). |
+| Anyone delivering a post the author signed earlier | No, once it is more than 5 minutes old. This would need [delayed delivery](#stage-3-delayed-delivery). |
 
 ## Stage 1: The Community Box
 
@@ -54,39 +54,25 @@ Hosting a community needs Node.js and a data directory: pkc-js's `LocalCommunity
 |---|---|
 | One whose host is the box | Keeps working, for everyone on the hotspot. |
 | A new one, created on the box during the blackout | Works locally from the start, and is an ordinary Bitsocial community once it has a link out. |
-| One whose host is somewhere else | Unreachable. The box can show what it cached. New posts wait for [Stage 2](#stage-2-delayed-delivery) or for the internet. |
+| One whose host is somewhere else | Unreachable. The box can show what it cached. People can post in a community on the box instead and crosspost later. Posting into the outside community directly would need [delayed delivery](#stage-3-delayed-delivery). |
 
 ### When a Link Returns
 
 The box is an ordinary Bitsocial node. Everything it accepted during the blackout is already part of the community, so it publishes its state and the rest of the network sees it. Nothing is signed again and no CID changes.
 
+### Carrying the Box Out
+
+When no link returns, the box itself can leave. A community hosted on a box is complete: its posts are accepted, have CIDs and are moderated. If the laptop, or a copy of its data, is carried to a place with internet, everything in it is published unchanged. This gets information out of a blackout with no protocol change.
+
+Authors can then bring their posts into communities hosted elsewhere with a [crosspost](https://github.com/pkcprotocol/pkc-js/blob/25a3066e0/docs/protocol/crossposts.md), which embeds the original signed post in a new one.
+
+A copy of the box's data includes the community's key, so whoever carries it controls the community. That is an open question.
+
 ### Not Yet Known
 
 Which parts of a host stop working with no internet has not been tested. Candidates are name resolution (`.bso` names can't be looked up offline), the HTTP routers used to find peers, and any challenge that calls an outside service. Finding out is the first task on the [roadmap](ROADMAP.md).
 
-## Stage 2: Delayed Delivery
-
-For communities hosted outside the affected area, the only way in is for someone to carry posts out: a phone that crosses a border, reaches a working network or gets a few minutes of signal. Today the host would reject those posts as too old.
-
-How it could work:
-
-1. The author writes and signs a post with no internet. Their app hands the signed post to other devices nearby, over the box's hotspot or any other link.
-2. A carrier's app holds it. The post is public and signed, so the carrier can read it but can't change it.
-3. When the carrier reaches the internet, their app runs the ordinary publishing exchange with the community, live, with the author's post inside.
-4. The community accepts it, because it has opted in to a longer window for the post's own timestamp.
-
-Only one check has to change: the host's comparison of the post's timestamp with its clock. The exchange around it is fresh, so its own 5-minute checks still hold. Communities that don't opt in behave exactly as today, and clients that know nothing about this keep working. It is still a protocol change, so it has to be proposed and decided by the pkc-js maintainers.
-
-What makes it hard:
-
-- **Backdating.** A long window lets an author claim a post was written earlier than it was.
-- **Challenges.** There is no author on the line to solve a captcha. Only challenges the author can answer up front (`challengeRequest.challengeAnswers`, `challengeCommentCids`) work, and the carrier has to be given those answers.
-- **The result goes to the carrier,** not the author.
-- **Replies arrive late,** in threads that moved on without them, and a reply can only name a parent that already has a CID.
-
-These are in [open-questions.md](open-questions.md#stage-2-delayed-delivery).
-
-## Stage 3: Linking Boxes
+## Stage 2: Linking Boxes
 
 A hotspot covers a building or a square. To reach across a city, boxes need links to each other, and LoRa radios reach kilometres per hop on licence-free bands. The radios are run by whoever runs the boxes; people joining a box still only need Wi-Fi.
 
@@ -122,6 +108,29 @@ Off-grid devices drift. A device that has not synced time in a while can drift p
 | LoRa (licence-free ISM bands) | Kilometres per hop | Throughput in bits to kilobits per second. Text only, small snapshots, pre-answered challenges. |
 | Amateur packet radio (e.g. NPR on 70 cm) | Long, with repeaters | Needs an operator licence. Amateur rules generally prohibit encrypting traffic, which conflicts with Reticulum's default encryption and pkc-js's encrypted challenge messages. |
 | Sneakernet (USB stick, SD card) | Anywhere | Works for reading snapshots. Publishing hits the 5-minute rule. |
+
+## Stage 3: Delayed Delivery
+
+Not planned until the earlier stages are in use and people ask for it. It is the only stage that needs a protocol change.
+
+The case it covers is narrow: posting, while offline, into a community hosted outside the affected area. [Carrying the box out](#carrying-the-box-out) already gets information out, and the author's own app can already publish once it is back online. What neither can do is let someone else deliver a post on the author's behalf, because the host rejects a post once it is 5 minutes old.
+
+How it could work:
+
+1. The author writes and signs a post with no internet. Their app hands the signed post to other devices nearby.
+2. A carrier's app holds it. The post is public and signed, so the carrier can read it but can't change it.
+3. When the carrier reaches the internet, their app runs the ordinary publishing exchange with the community, live, with the author's post inside.
+4. The community accepts it, because it has opted in to older posts.
+
+Why it is more than widening a window:
+
+- **Backdating.** A long window lets an author claim a post is older than it is. The host would have to record when it received the post and sign that into what it publishes.
+- **Ordering.** A post delivered a day late would sort by its old timestamp and land where nobody looks. Showing it means sorting by the time it was received, which changes how pages are built.
+- **Spam.** Nobody is on the line to solve a challenge, and the carrier supplying the answers may be the spammer. Delayed posts would have to go to the moderators' approval queue, which pkc-js already has (`pendingApproval`), not straight into the community.
+- **Votes and edits can't be included.** A host replaces an author's earlier vote with whichever one arrives, without comparing timestamps. Inside a long window, anyone holding an old vote could send it again and undo a newer one. Delayed delivery would cover posts and replies only. A post delivered twice is already rejected, since the host refuses a comment whose signature it has stored.
+- **The result goes to the carrier,** not the author.
+
+Communities that don't opt in would behave exactly as today. It would still add permanent fields to the community record, which is why it waits. See [open-questions.md](open-questions.md#stage-3-delayed-delivery).
 
 ## Stage 4: Phone to Phone
 
