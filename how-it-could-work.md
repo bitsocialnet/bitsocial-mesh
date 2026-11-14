@@ -84,7 +84,7 @@ What makes it hard:
 - **The result goes to the carrier,** not the author.
 - **Replies arrive late,** in threads that moved on without them, and a reply can only name a parent that already has a CID.
 
-These are in [open-questions.md](open-questions.md#delayed-delivery).
+These are in [open-questions.md](open-questions.md#stage-2-delayed-delivery).
 
 ## Stage 3: Linking Boxes
 
