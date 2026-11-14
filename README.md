@@ -52,6 +52,7 @@ LoRa, packet radio, gateways and communities hosted on the mesh itself are later
 ## Documents
 
 - [how-it-could-work.md](how-it-could-work.md): the Nearby setting, publishing on reconnect, privacy, and the later long-range stages
+- [ROADMAP.md](ROADMAP.md): the phases from first measurements to an experimental Android release, with a checklist for each
 - [open-questions.md](open-questions.md): decisions not yet made, including wire format, unmoderated content, licensing and radio law
 
 ## License
